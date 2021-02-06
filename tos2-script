@@ -1,0 +1,69 @@
+#!/bin/bash 
+
+### varibles ###
+tos2Folder="/tmp/tos2-installation-folder"
+uninstallLogFile="$tos2Folder/tos2_uninstall"
+downloadLogFile="$tos2Folder/download_run_file"
+
+### functions ###
+preparingEnv() {
+  touch /root/.cancel_check_running_tos_from_screen
+  rm -rf "$tos2Folder"
+  mkdir "$tos2Folder"
+}
+
+uninstallTos2() {
+   echo 
+   echo 'Preforming TOS2 uninstall...'
+   date > $tos2Folder/tos2_uninstall
+   echo -e 'y' | tos uninstall >> $tos2Folder/tos2_uninstall 2>&1
+   rm -rf /opt/tufin/*
+   local status=$( tos version | grep Tufin | awk -F: '{print $2}' )
+   if [ "$status" == " NOT INSTALLED" ]; then
+      echo "Succeeded! TOS is not installed anymore..."
+   else
+      echo "There are some issues with the uninstallation process. please refer to $uninstallLogFile."
+      exit 0
+   fi
+}
+
+isDownloadFinished() {
+  ll /opt/"$1"
+  if [ $? -eq 2 ]; then
+    echo "The file wasn't downloaded, please verify you have enough storage in the /opt folder / don't have networking issues."
+    exit 0;
+  fi
+}
+
+downloadTos2() {
+    wget -P /opt "https://artifactory-prod.tufin.com/artifactory/TOS2_infra/RUN_files/tos_$1.run"
+    sleep 5
+    isDownloadFinished "$1"
+    return 0
+}
+
+
+echo '######## Script start ########'
+echo
+echo "Do you need to preform TOS uninstall (y/n) ?"
+read tosUninstall
+echo
+echo 'Please the version you want to install:'
+echo 'examples : 20-1-pga, 20-2-phf1, 21-1-prc1'
+echo
+read tosVersion
+downloadTos2 "$tosVersion"
+extractTos2
+installTos2
+
+
+if [ $tosUninstall == 'y' ]
+then
+  uninstallTos2
+elif [ $tosUninstall != 'n' ]
+then
+  echo "The input should be (y/n)"
+fi
+
+
+

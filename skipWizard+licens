@@ -1,0 +1,5 @@
+#!/bin/bash
+
+psql -Upostgres securetrack -c  "update st_wiz set wizard_run='t'"
+
+psql -Upostgres securetrack -c "delete from st_licenses;" &&  psql -Upostgres securetrack -c "insert into st_licenses VALUES ('evaluation','AAFwzRiNvnD+6chiwCcv1zMTTqBizqHziQHozuDFbBZtnYgb+infXileqq9WqeT1vTR7WLR16Jf++6WrDi0B+C3VovuuzpRkEe9yvvoCjbCziRi8GVfOQ3iqQVnFhnw2Hx+wo8CAYnvDSGhbwzOAr1qsHrDd/5zdKUD/HpytR1vpICBa8efhL1xI0psiKjEOJhmPQz7CZf4zZ0y+aYsZw/h6FeYBrF6A2a9Uvgks6ULP7osGKrPGjGkfbLRtu3cRaGHXId7LmzjtahYvKDdItMsKVzHq8LtYYYyt0IA1hrXRWAN6naqxRz3NAXjTQG9FMdCKgwR/i7lvKxErUN5uhnoaxzg36eXmwjGcSgZH3QJxcMWvz+kWrPtQ3jdve6ONov7r9CtxcFIGbyaLDhtYec5G0KkpJ4riK+74SYoulSXsVVIbBbYryc/2bhSDWgBUhWqxx4Hf6GW43jVSkSJzkhz1N5Z8p4FhMmkWU7BQ5r9DOe3MmOCEcs2b8QLcQAJRtCOrS6pzAcbsAG1wuIpx0Nu6rjaz3ndALS788wQxigqU8zz1q8SgUTzEKk8xyD/9bN+6bjtzRdXAceCYytdxfMazuKm4lnDJOLZl5VsA6Ia5isDWSmQuI6CSCT6OsmVe3Q+jEqZn0jxv4R3Qz4US+0lXd3eskdRhKis83DTLN210RQ==');"

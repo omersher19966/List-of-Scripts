@@ -1,0 +1,119 @@
+#!/bin/bash
+
+### Author: Omer Sher
+### 20/12/20
+
+##### variables ###
+alias-1="find-pod"
+alias-2="enter-pod"
+alias-3="show-log"
+alias-4="delete-pod"
+
+function preformSetup() {
+    echo
+    echo "Setup is running..."
+    local check=$( grep 'find-pod\|enter-pod\|show-log\|delete-pod' /root/.bashrc)
+    if [ ! -z "$check" ]
+    then
+      echo "Setup is already implemented!"
+      echo
+      exit
+    else
+      local filePath=$( find / -name tos-pods-script 2> /dev/null )
+      sed  -i "/User specific aliases and functions/a alias find-pod=\'bash $filePath find\'" /root/.bashrc
+      sed  -i "/User specific aliases and functions/a alias enter-pod=\'bash $filePath enter\'" /root/.bashrc
+      sed  -i "/User specific aliases and functions/a alias show-log=\'bash $filePath log\'" /root/.bashrc
+      sed  -i "/User specific aliases and functions/a alias delete-pod=\'bash $filePath delete\'" /root/.bashrc
+      echo
+      echo "Setup is done!"
+      echo "Preform re-connection for the setup to start working."
+      echo
+      exit
+    fi
+}
+function findPods () {
+	kubectl get pods | grep -i "$1"
+}
+
+function selectSpecificPod () {
+    local selectedPodNumber
+    echo
+    echo "There are several matching pods, please enter the number of the pod you want to get into: "
+    echo
+    echo "$1" | grep -n "$3"
+    echo
+    read selectedPodNumber
+    if [ $selectedPodNumber -gt 0 ] && [ $selectedPodNumber -lt $(( $2 + 1 )) ]
+    then
+      return $selectedPodNumber
+    else
+      echo "Incorrect number"
+      exit
+    fi
+}
+
+function enterPods () {
+selectedPod=`kubectl get pods | grep -i ^"$1" | awk '{print $1}'`
+noOfSelectedPod=`echo "$selectedPod" | wc -l`
+if [ "$1" = "tss" ] || [ "$1" = "st-server" ]
+then 
+	kubectl exec -it deploy/"$1" -c "$1" bash
+elif [ $noOfSelectedPod -gt 1 ]
+then
+  selectSpecificPod "$selectedPod" $noOfSelectedPod "$1"
+  indexOfSpecificPod=$?
+  specificPod=`echo "$selectedPod" | grep -n ^"$1" | grep -e ^$indexOfSpecificPod: | awk -F: '{print $2}'`
+  kubectl exec -it "$specificPod" bash
+else
+  kubectl exec -it "$selectedPod" bash
+fi
+}
+
+function showLogs() {
+  pod=$(kubectl get pods | grep $1 | awk '{ print $1}')
+  if [ ! -z $2 ]; then
+        kubectl logs -f $pod --tail $2
+  else
+        kubectl logs -f $pod
+fi
+}
+
+function deletePods() {
+selectedPod=`kubectl get pods | grep -i "$1" | awk '{print $1}'`
+noOfSelectedPod=`echo "$selectedPod" | wc -l`
+if [ $noOfSelectedPod -gt 1 ]
+then
+  selectSpecificPod "$selectedPod" $noOfSelectedPod "$1"
+  indexOfSpecificPod=$?
+  specificPod=`echo "$selectedPod" | grep -n "$1" | grep -e ^$indexOfSpecificPod: | awk -F: '{print $2}'`
+  kubectl delete pods "$specificPod"
+else
+  kubectl delete pods "$selectedPod"
+fi
+}
+
+
+
+######## start script ###########
+
+case $1 in
+  setup)
+    preformSetup
+    ;;
+  find)
+    findPods "$2"
+    ;;
+  enter)
+    enterPods "$2"
+    ;;
+  delete)
+    deletePods "$2"
+    ;;
+  log)
+    showLogs "$2" "$3"
+    ;;
+  *)
+    echo "There is not a such option"
+    ;;
+esac
+

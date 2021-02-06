@@ -1,0 +1,16 @@
+#!/bin/bash
+
+echo "Enter the name of the interface you want to config :"
+read int
+echo "Enter the IP address : "
+read ip
+echo "Enter the subnet mask : "
+read sm
+echo "Enter the default gateway address : "
+read dg
+
+
+if 
+then 
+	
+sed 's/IPADDR='.*'/IPADDR=10.100.10.5/g' /etc/sysconfig/network-scripts/ifcfg-ens160
