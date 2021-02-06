@@ -53,20 +53,20 @@ function selectSpecificPod () {
 }
 
 function enterPods () {
-selectedPod=`kubectl get pods | grep -i ^"$1" | awk '{print $1}'`
-noOfSelectedPod=`echo "$selectedPod" | wc -l`
-if [ "$1" = "tss" ] || [ "$1" = "st-server" ]
-then 
-	kubectl exec -it deploy/"$1" -c "$1" bash
-elif [ $noOfSelectedPod -gt 1 ]
-then
-  selectSpecificPod "$selectedPod" $noOfSelectedPod "$1"
-  indexOfSpecificPod=$?
-  specificPod=`echo "$selectedPod" | grep -n ^"$1" | grep -e ^$indexOfSpecificPod: | awk -F: '{print $2}'`
-  kubectl exec -it "$specificPod" bash
-else
+  selectedPod=`kubectl get pods | grep -i ^"$1" | awk '{print $1}'`
+  noOfSelectedPod=`echo "$selectedPod" | wc -l`
+  if [ "$1" = "tss" ] || [ "$1" = "st-server" ]
+  then 
+	  kubectl exec -it deploy/"$1" -c "$1" bash
+  elif [ $noOfSelectedPod -gt 1 ]
+  then
+    selectSpecificPod "$selectedPod" $noOfSelectedPod "$1"
+    indexOfSpecificPod=$?
+    specificPod=`echo "$selectedPod" | grep -n ^"$1" | grep -e ^$indexOfSpecificPod: | awk -F: '{print $2}'`
+    kubectl exec -it "$specificPod" bash
+  else
   kubectl exec -it "$selectedPod" bash
-fi
+  fi
 }
 
 function showLogs() {
@@ -75,7 +75,7 @@ function showLogs() {
         kubectl logs -f $pod --tail $2
   else
         kubectl logs -f $pod
-fi
+  fi
 }
 
 function deletePods() {
